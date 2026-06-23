@@ -1,180 +1,229 @@
-[Google Maps Scraper](https://apify.com/miccho27/google-maps-scraper?fpr=data)
+[Google Maps Scraper](https://apify.com/scraperlink/google-maps-scraper?fpr=data)
 
-# Google Maps Scraper - Free No-Code Local Business Data Extractor (Alternative to PhantomBuster, Outscraper)
+# Google Maps Scraper
 
-Scrape Google Maps business listings at scale -- name, address, phone, website, ratings, reviews, opening hours, and GPS coordinates. No API keys, no Google Cloud billing, no monthly subscription. The best free alternative to PhantomBuster, Outscraper, SerpApi, and Google Places API.
+**$0.50 per 1,000 results — all-in. No proxy fees. No compute surprises.**
 
-## Who Is This For?
+Pull structured business data from Google Maps at a fraction of what other actors charge. Every run is fast, lightweight, and billed only for results you actually receive — each business lands as its own row in the dataset.
 
-- **Sales teams & SDRs** -- Build hyper-local lead lists of businesses in any city, category, and radius
-- **Real estate agents** -- Map competitor agencies, restaurants, amenities near properties
-- **Local SEO agencies** -- Audit client Google Maps presence and benchmark against local competitors
-- **Market researchers** -- Analyze business density, ratings, and review distribution in target markets
-- **Franchise operators** -- Map competitor locations and identify expansion opportunities
+The leading Google Maps actor on Apify charges **$2.10 per 1,000 results**. We charge **$0.50**. That's 4× cheaper, with more data fields, faster runs, and zero hidden costs.
 
-## Features
+---
 
-- **Search Mode** -- Search by query (e.g., "restaurants in Tokyo") and get top results with full details
-- **Direct URL Mode** -- Scrape specific Google Maps place URLs for targeted data extraction
-- **Multi-Language** -- Supports any Google Maps language (en, ja, es, de, fr, pt, etc.)
-- **Review Details** -- Optionally fetch detailed place information including opening hours
-- **Geo Coordinates** -- Latitude/longitude for each listing, ready for mapping tools
-- **Structured Output** -- Clean JSON output ready for CRM import, spreadsheets, or downstream pipelines
+## What makes this different
 
-## Pricing -- Free to Start
-
-| Tier | Cost | What You Get |
+|  | This actor | Top competitor |
 | --- | --- | --- |
-| **Free trial** | $0 | Apify free tier includes monthly compute credits |
-| **Pay per listing** | ~$0.01-0.05/listing | Only pay for actual Apify compute used |
-| **vs. PhantomBuster** | Saves $69-439/mo | Same data, no phantom credits |
-| **vs. Outscraper** | Saves $22-100/mo | No per-record pricing |
-| **vs. Google Places API** | Saves $17/1000 requests | No Google Cloud billing setup |
+| Price per 1,000 results | **$0.50** | $2.10+ |
+| Proxy & infrastructure costs | **Included** | Billed separately |
+| Data fields per result | **40+** | ~20 |
+| Output organized into tabs | **6 tabs** | Basic table |
+| Browser required | **No** | Yes (Playwright) |
+| Bulk queries in one run | **Yes** | Yes |
+| Results as individual rows | **Yes** | Sometimes nested |
+| Max results per query | **200** | 120–200 |
 
-## Quick Start (3 Steps)
+**No browser means no Playwright, no Chromium, no headless overhead.** Runs complete in seconds, not minutes. You're not paying Apify compute for a browser to sit idle while a page loads.
 
-1. **Click "Try for free"** on this Actor's page in Apify Store
-2. **Enter a search query** (e.g., "coffee shops in New York") or paste Google Maps URLs
-3. **Click "Start"** and download results as JSON, CSV, or Excel
+**Proxy costs are absorbed.** Every request is routed through our infrastructure. You never need to configure Apify proxies or eat proxy credits from your own plan.
 
-## How It Compares to Paid Alternatives
+---
 
-| Feature | This Actor (FREE) | PhantomBuster ($69/mo) | Outscraper ($22/mo) | Google Places API ($17/1K) | SerpApi ($75/mo) |
-| --- | --- | --- | --- | --- | --- |
-| Business data scraping | Yes | Yes | Yes | Yes | Yes |
-| Search by query | Yes | Yes | Yes | No (Place ID needed) | Yes |
-| Ratings & reviews | Yes | Yes | Yes | Yes | Yes |
-| Opening hours | Yes | Limited | Yes | Yes | Limited |
-| GPS coordinates | Yes | No | Yes | Yes | Yes |
-| Phone numbers | Yes | Yes | Yes | Yes | Yes |
-| API/automation | Yes (Apify API) | Yes | Yes | Yes | Yes |
-| Scheduling | Yes (Apify scheduler) | Yes | No | No | No |
-| Bulk processing | Unlimited | Credit-limited | Per-record | Per-request | Plan-limited |
-| Cloud-based | Yes | Yes | Yes | Yes | Yes |
-| API keys required | None | None | None | Yes (Google Cloud) | Yes |
-| Monthly cost | $0 (pay per run) | $69-439 | $22-100 | Usage-based ($17/1K) | $75-300 |
+## Data you get (40+ fields across 6 tabs)
+
+### Overview
+
+Name, rating, review count, price level, category, full address, website, phone, and direct Google Maps URL — everything you need at a glance.
+
+### Contact Info
+
+Full address broken into components (street, number, neighborhood, city, postal code, state, country), domain, all three phone formats (international, formatted, digits-only), coordinates (lat/lng), plus code, and the building or complex the business is located in.
+
+### Hours
+
+Live open/closed status, weekly opening hours, service-specific hours (lunch, dinner, brunch, happy hour, and more), and booking/reservation links.
+
+### Ratings & Reviews
+
+Total score, star rating, rating count, review count, full review distribution (1–5 stars breakdown), and price tier.
+
+### Media & Identity
+
+Place ID, Data ID, CID, FID, Google Maps URL, search result URL, business image, thumbnail, logo, and owner information.
+
+### Metadata
+
+Original search query, rank and position in results, timezone, temporarily/permanently closed flags, about text, and popular times histogram data.
+
+---
 
 ## Input
 
-| Field | Type | Default | Description |
-| --- | --- | --- | --- |
-| `searchQuery` | string | -- | Search query (e.g., "dentists in Los Angeles") |
-| `placeUrls` | string[] | -- | Direct Google Maps place URLs to scrape |
-| `maxResults` | integer | `20` | Max results to return (search mode) |
-| `includeReviews` | boolean | `true` | Include detailed place info |
-| `language` | string | `"en"` | Google Maps language code |
+| Field | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `query` | string list | ✅ | — | One or more Google Maps search queries (e.g. `dentists in chicago`) |
+| `num` | integer |  | `20` | Results to return per query (max `200`) |
+| `gl` | string |  | `us` | Country for Google Maps results — match this to the country you're searching in (`ca`, `gb`, `de`, etc.) |
+| `hl` | string |  | `en` | Interface language for Google results (`fr`, `es`, `de`, etc.) |
+| `fields` | string |  | — | Comma-separated list of fields to keep — leave blank to get everything |
 
-### Example Input -- Search Mode
-
-```
-{
-  "searchQuery": "coffee shops in New York",
-  "maxResults": 20,
-  "includeReviews": true,
-  "language": "en"
-}
-```
-
-### Example Input -- Direct URL Mode
+### Example: multi-city lead generation
 
 ```
 {
-  "placeUrls": [
-    "https://www.google.com/maps/place/Starbucks/..."
-  ]
+  "query": [
+    "personal injury lawyers in houston",
+    "personal injury lawyers in dallas",
+    "personal injury lawyers in austin"
+  ],
+  "num": 200,
+  "gl": "us",
+  "hl": "en"
 }
 ```
 
-### Example Input -- Japanese Market
+### Example: international search
 
 ```
 {
-  "searchQuery": "ラーメン 渋谷",
-  "maxResults": 30,
-  "includeReviews": true,
-  "language": "ja"
+  "query": ["coffee shops in london"],
+  "num": 100,
+  "gl": "gb",
+  "hl": "en"
 }
 ```
 
-## Output Example
+---
+
+## Sample result
 
 ```
 {
-  "name": "Blue Bottle Coffee",
-  "address": "450 W 15th St, New York, NY 10011",
-  "phone": "+1-510-653-3394",
-  "website": "https://bluebottlecoffee.com",
-  "rating": 4.5,
-  "reviewCount": 2340,
-  "category": "Coffee shop",
-  "latitude": 40.7425,
-  "longitude": -74.0053,
-  "openingHours": [
-    "Monday: 7:00 AM - 6:30 PM",
-    "Tuesday: 7:00 AM - 6:30 PM"
-  ]
+  "query": "restaurants in toronto",
+  "searchString": "restaurants in toronto",
+  "rank": 1,
+  "position": 1,
+  "title": "Black+Blue Toronto",
+  "categoryName": "Restaurant",
+  "type": "Restaurant",
+  "categories": [
+    "Restaurant",
+    "Brunch restaurant",
+    "Event venue",
+    "Fine dining restaurant",
+    "Lounge bar",
+    "Seafood restaurant",
+    "Steak house",
+    "Sushi restaurant",
+    "Wine bar"
+  ],
+  "types": [
+    "Restaurant",
+    "Brunch restaurant",
+    "Event venue",
+    "Fine dining restaurant",
+    "Lounge bar",
+    "Seafood restaurant",
+    "Steak house",
+    "Sushi restaurant",
+    "Wine bar"
+  ],
+  "address": "130 King St W, Toronto, ON M5X 2A2, Canada",
+  "neighborhood": "Old Toronto",
+  "street": "130 King St W",
+  "streetNumber": null,
+  "city": "Toronto",
+  "postalCode": "M5X 2A2",
+  "state": "Ontario",
+  "countryCode": "CA",
+  "locatedIn": "Old Toronto",
+  "timezone": "America/Toronto",
+  "totalScore": 4.7,
+  "rating": 4.7,
+  "reviewsCount": 5589,
+  "ratingCount": 5589,
+  "reviewsDistribution": null,
+  "priceLevel": "CA$100 or above",
+  "phone": "+1 647-368-8283",
+  "phoneNumber": "(647) 368-8283",
+  "phoneUnformatted": "+16473688283",
+  "website": "https://blackandbluesteakhouse.ca/toronto-home/",
+  "domain": "blackandbluesteakhouse.ca",
+  "placeId": "ChIJ243-C381K4gRHMKWCGU86iM",
+  "dataId": "/g/11s9wnk_vb",
+  "cid": "2587947340511232540",
+  "cidHex": "0x882b357f0bfe8ddb:0x23ea3c650896c21c",
+  "fid": "0x882b357f0bfe8ddb:0x23ea3c650896c21c",
+  "googleMapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJ243-C381K4gRHMKWCGU86iM",
+  "url": "https://www.google.com/maps/search/?api=1&query=Black%2BBlue+Toronto&query_place_id=ChIJ243-C381K4gRHMKWCGU86iM",
+  "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkA...",
+  "thumbnailUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkA...",
+  "logoUrl": "https://lh3.googleusercontent.com/-ih84iASeZ7Y/AAAAAAA.../photo.jpg",
+  "owner": {
+    "name": "Black+Blue Toronto (Owner)",
+    "googleId": "102477914189084708456"
+  },
+  "location": {
+    "lat": 43.6480996,
+    "lng": -79.3831247
+  },
+  "latitude": 43.6480996,
+  "longitude": -79.3831247,
+  "plusCode": null,
+  "temporarilyClosed": null,
+  "permanentlyClosed": null,
+  "openingHours": {
+    "Friday": "11:30 AM–12 AM",
+    "Saturday": "10:30 AM–12 AM",
+    "Sunday": "10:30 AM–12 AM",
+    "Monday": "11:30 AM–12 AM",
+    "Tuesday": "11:30 AM–12 AM",
+    "Wednesday": "11:30 AM–12 AM",
+    "Thursday": "11:30 AM–12 AM"
+  },
+  "openingHoursDetailed": [
+    { "day": "Friday",    "hours": ["11:30 AM–12 AM"] },
+    { "day": "Saturday",  "hours": ["10:30 AM–12 AM"] },
+    { "day": "Sunday",    "hours": ["10:30 AM–12 AM"] },
+    { "day": "Monday",    "hours": ["11:30 AM–12 AM"] },
+    { "day": "Tuesday",   "hours": ["11:30 AM–12 AM"] },
+    { "day": "Wednesday", "hours": ["11:30 AM–12 AM"] },
+    { "day": "Thursday",  "hours": ["11:30 AM–12 AM"] }
+  ],
+  "openingHoursState": "Open · Closes 12 AM",
+  "serviceHours": {
+    "Lunch":       { "Friday": "11:30 AM–2 PM" },
+    "Happy hours": { "Friday": "2:30–5:30 PM" },
+    "Kitchen":     { "Friday": "11:30 AM–12 AM" },
+    "Dinner":      { "Friday": "3 PM–12 AM" },
+    "Brunch":      { "Friday": "Closed" }
+  },
+  "bookingLinks": [
+    "https://party-request.tripleseat.com/venues/8qsUeRbI/?rwg_token=...",
+    "https://www.google.com/maps/reserve/v/dine/c/DUtUFyMlWBE?source=pa",
+    "https://party-request.tripleseat.com/venues/8qsUeRbI/?rwg_token=..."
+  ],
+  "popularTimes": null,
+  "about": null
 }
 ```
 
-## Output Fields
+---
 
-| Field | Description |
-| --- | --- |
-| `name` | Business name |
-| `address` | Street address |
-| `phone` | Phone number |
-| `website` | Business website URL |
-| `rating` | Average star rating (1-5) |
-| `reviewCount` | Total number of reviews |
-| `category` | Business category |
-| `latitude` | GPS latitude |
-| `longitude` | GPS longitude |
-| `openingHours` | Business hours (array of strings) |
+## Use cases
 
-## Real-World Use Cases
+- **Lead generation** — Build targeted prospect lists by business type and location
+- **Competitor research** — Monitor competitor ratings, hours, and pricing across cities
+- **Market analysis** — Map business density and coverage in any region
+- **Directory building** — Populate local business directories with verified contact data
+- **CRM enrichment** — Append phone, website, coordinates, and hours to existing records
 
-### 1. Local Lead Generation
+---
 
-Search "accountants in Miami" and get a ready-to-use prospect list with name, phone, website, and email (combine with Email Finder Actor for contact discovery).
+## Notes
 
-### 2. Competitor Mapping
-
-Map all competitors in a radius. Export GPS coordinates to Google My Maps or Tableau for visual competitive analysis.
-
-### 3. Local SEO Audit
-
-Scrape your client's category in their city. Compare their rating, review count, and category against top competitors for a data-driven SEO report.
-
-### 4. Market Entry Analysis
-
-Before opening a new location, scrape existing businesses in the target area. Analyze density, ratings, and review sentiment to assess market saturation.
-
-### 5. Business Directory Building
-
-Build niche directories (e.g., "vegan restaurants in London") with live data. Schedule weekly runs to keep listings current.
-
-## FAQ
-
-**Q: How does this compare to Google Places API?**
-
-A: Google Places API requires a Google Cloud account, billing setup, and API key management. It charges ~$17 per 1,000 requests. This Actor requires zero setup and costs a fraction per listing through Apify's compute pricing.
-
-**Q: How many listings can I scrape per run?**
-
-A: No hard limit. Google Maps search typically returns 20-60 results per query. For larger datasets, use multiple search queries (e.g., by neighborhood or subcategory).
-
-**Q: Can I scrape reviews text?**
-
-A: Currently, the Actor extracts review count and average rating. Full review text extraction is planned for a future update.
-
-**Q: Can I schedule this to run daily?**
-
-A: Yes. Use Apify's built-in scheduler for automated lead generation or competitor monitoring. Combine with webhooks to push results to your CRM, Google Sheets, or Slack.
-
-**Q: What languages are supported?**
-
-A: Any language supported by Google Maps. Set the `language` parameter to the ISO language code (en, ja, es, de, fr, pt, zh, ko, etc.).
-
-**Q: Can I export results to CSV or Google Sheets?**
-
-A: Yes. Apify datasets can be exported as JSON, CSV, Excel, or pushed directly to Google Sheets, Slack, email, or any webhook endpoint.
+- Multiple queries run in one actor invocation — no need to start separate runs per city or keyword.
+- Set `gl` to match the country you're targeting for the most accurate local results (`gl=ca` for Canada, `gl=gb` for UK, `gl=de` for Germany).
+- Use `fields` to trim output to only the columns you need — useful for large runs where you want a lean dataset.
+- Results are cached on our infrastructure for 1 hour, so repeated identical queries return immediately without re-fetching.
+- This actor makes no browser calls. It connects directly to our scraping infrastructure, meaning cold starts are near-instant and memory usage stays flat throughout the run.
