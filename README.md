@@ -1,192 +1,123 @@
-[Google Maps Scraper](https://apify.com/sovereigntaylor/google-maps-scraper?fpr=data)
+[Google Maps Scraper](https://apify.com/openclawai/google-maps-scraper?fpr=data)
 
-# Google Maps Business Scraper
+Extract business data from Google Maps with no API key. Get names, addresses, phone numbers, websites, ratings, reviews, coordinates, opening hours, and more.
 
-Extract business data from Google Maps at scale. Get names, addresses, phone numbers, websites, ratings, reviews, hours, coordinates, and more for any business type in any location worldwide.
+---
 
-## Why This Actor?
+## What You Get
 
-- **Complete data extraction** — Get 15+ data fields per business including contact info, hours, and GPS coordinates
-- **Any location worldwide** — Search businesses in any city, region, or country
-- **Structured output** — Clean JSON ready for your CRM, spreadsheet, or database
-- **Pay per result** — Only pay for successfully scraped listings, no wasted spend
-- **Fast & reliable** — Built with proxy rotation and anti-blocking for consistent results
+| Field | Description |
+| --- | --- |
+| `title` | Business name |
+| `category` | Business type (e.g. "Coffee shop") |
+| `address` | Full street address |
+| `phone` | Phone number |
+| `website` | Business website URL |
+| `review_rating` | Average rating (1.0–5.0) |
+| `review_count` | Total number of reviews |
+| `status` | Open / Closed / Temporarily closed |
+| `description` | Business description |
+| `price_range` | Price indicator ($, $$, $$$) |
+| `open_hours` | Hours per day of week |
+| `latitude` | GPS latitude |
+| `longitude` | GPS longitude |
+| `plus_code` | Google Plus Code |
+| `images` | Up to 5 photo URLs |
+| `reviews` | Top 10 reviews (optional) |
+| `link` | Direct Google Maps URL |
 
-## Features
+---
 
-- Search any business type by keyword (restaurants, dentists, plumbers, hotels, etc.)
-- Filter by location (city, state, zip code, or coordinates)
-- Extract: name, address, phone, website, email, rating, reviews, price level
-- GPS coordinates for mapping and geofencing
-- Business hours and open/closed status
-- Google Maps URL for each listing
-- Category and subcategory classification
-- Configurable zoom level and result limits
-- Automatic pagination for large result sets
-- Proxy support for reliable extraction
+## Example Inputs
 
-## Input Parameters
-
-| Field | Type | Default | Description |
-| --- | --- | --- | --- |
-| `searchTerm` | string | *required* | Business type to search (e.g., "pizza", "dentist near me", "gym") |
-| `location` | string | `""` | City or area (e.g., "Manhattan, New York", "London, UK", "Tokyo") |
-| `maxResults` | number | `20` | Maximum number of listings to return (1-500) |
-| `zoom` | number | `13` | Map zoom level (1-21). Lower = wider area, higher = more focused |
-
-## Output Example
-
-Each business listing includes all available data:
+### Find restaurants in a city
 
 ```
 {
-  "name": "Joe's Pizza",
-  "address": "7 Carmine St, New York, NY 10014",
-  "phone": "+1 212-366-1182",
-  "website": "https://joespizzanyc.com",
-  "rating": 4.4,
-  "reviewCount": 8500,
-  "priceLevel": "$",
-  "category": "Pizza restaurant",
-  "hours": [
-    "Monday: 10:00 AM – 4:00 AM",
-    "Tuesday: 10:00 AM – 4:00 AM",
-    "Wednesday: 10:00 AM – 4:00 AM",
-    "Thursday: 10:00 AM – 4:00 AM",
-    "Friday: 10:00 AM – 5:00 AM",
-    "Saturday: 10:00 AM – 5:00 AM",
-    "Sunday: 10:00 AM – 4:00 AM"
-  ],
-  "coordinates": {
-    "lat": 40.7305,
-    "lng": -74.0023
-  },
-  "url": "https://maps.google.com/maps?cid=12345678901234567",
-  "placeId": "ChIJHQl_OJBZwokR..."
+    "query": "restaurants in New York",
+    "maxResults": 50
 }
 ```
+
+### Lead gen — local businesses
+
+```
+{
+    "query": "plumbers in Austin Texas",
+    "maxResults": 100,
+    "proxyConfiguration": {
+        "useApifyProxy": true,
+        "apifyProxyGroups": ["RESIDENTIAL"]
+    }
+}
+```
+
+### Scrape reviews too
+
+```
+{
+    "query": "coffee shops in London",
+    "maxResults": 20,
+    "scrapeReviews": true
+}
+```
+
+---
 
 ## Use Cases
 
-### Lead Generation & Sales Prospecting
+- **Lead generation** — build lists of local businesses with contact info
+- **Competitor research** — track competitor ratings, reviews, locations
+- **Market analysis** — map business density in any area
+- **Real estate** — find nearby amenities for property listings
+- **Travel & hospitality** — aggregate restaurants, hotels, attractions
+- **Review monitoring** — track what customers say about businesses
 
-Build targeted prospect lists for cold outreach. Search for any business type in any location to build lists with phone numbers and websites for your sales team.
-
-**Example:** Find all dentists in Houston, TX:
-
-```
-{
-  "searchTerm": "dentist",
-  "location": "Houston, TX",
-  "maxResults": 200
-}
-```
-
-### Local SEO Audit & Competitor Analysis
-
-Analyze competitors in your area. See their ratings, review counts, and how they rank on Google Maps. Identify gaps in the market.
-
-**Example:** Analyze coffee shops in downtown Seattle:
-
-```
-{
-  "searchTerm": "coffee shop",
-  "location": "downtown Seattle, WA",
-  "maxResults": 100
-}
-```
-
-### Market Research & Location Intelligence
-
-Analyze business density, pricing levels, and customer satisfaction across different areas. Perfect for site selection, franchise planning, and market entry analysis.
-
-**Example:** Map all gyms in Brooklyn:
-
-```
-{
-  "searchTerm": "gym",
-  "location": "Brooklyn, NY",
-  "maxResults": 300
-}
-```
-
-### Real Estate Analysis
-
-Map amenities and services near properties. Analyze walkability scores, restaurant density, and proximity to key services for real estate valuations.
-
-### Travel & Hospitality
-
-Build local guides, restaurant lists, and attraction databases for travel content or concierge services.
-
-### Data Enrichment
-
-Enrich your existing business database with Google Maps data — add missing phone numbers, websites, ratings, and coordinates.
-
-## Integration Examples
-
-### Export to Google Sheets
-
-Use the Apify Google Sheets integration to automatically export results to a spreadsheet for your team.
-
-### Connect to CRM
-
-Push leads directly to HubSpot, Salesforce, or Pipedrive using Apify's built-in integrations.
-
-### API Access
-
-Call this actor programmatically from your application:
-
-```
-const { ApifyClient } = require('apify-client');
-const client = new ApifyClient({ token: 'YOUR_API_TOKEN' });
-
-const run = await client.actor('sovereigntaylor/google-maps-scraper').call({
-    searchTerm: 'plumber',
-    location: 'Austin, TX',
-    maxResults: 50
-});
-
-const { items } = await client.dataset(run.defaultDatasetId).listItems();
-console.log(items);
-```
-
-```
-from apify_client import ApifyClient
-
-client = ApifyClient('YOUR_API_TOKEN')
-run = client.actor('sovereigntaylor/google-maps-scraper').call(run_input={
-    'searchTerm': 'plumber',
-    'location': 'Austin, TX',
-    'maxResults': 50
-})
-
-items = list(client.dataset(run['defaultDatasetId']).iterate_items())
-```
-
-## FAQ
-
-**How many results can I get?**
-Up to 500 per run. For more, run multiple searches with different locations or zoom levels.
-
-**Which countries are supported?**
-Any country where Google Maps is available — over 200 countries and territories.
-
-**How fresh is the data?**
-Data is scraped in real-time from Google Maps. You always get the latest available information.
-
-**Can I schedule regular scrapes?**
-Yes! Use Apify's built-in scheduler to run this actor daily, weekly, or at any interval.
-
-**What format is the output?**
-JSON, CSV, or Excel — download directly or use the API to integrate with your systems.
+---
 
 ## Pricing
 
-Pay per result — you're only charged for each business listing successfully extracted. No monthly fees, no minimum spend. See the Pricing tab for current rates.
+Pay per result scraped. You only pay for what you get.
 
-## Related Actors
+| Volume | Cost per place |
+| --- | --- |
+| 1–100 | $0.005 |
+| 100–1000 | $0.003 |
+| 1000+ | $0.002 |
 
-- [Google Maps Email Extractor](https://apify.com/sovereigntaylor/google-maps-email-extractor) — Extract emails from Google Maps business websites
-- [Google Search Scraper](https://apify.com/sovereigntaylor/google-search-scraper) — Scrape Google search results
-- [Google Shopping Scraper](https://apify.com/sovereigntaylor/google-shopping-scraper) — Extract Google Shopping product data
-- [B2B Leads Finder](https://apify.com/sovereigntaylor/b2b-leads-finder) — Multi-source B2B lead generation
+---
+
+## Proxy Recommendation
+
+Google Maps has aggressive bot detection. **Residential proxies are strongly recommended** for scraping at scale.
+
+Configure in the `proxyConfiguration` input field using Apify Residential proxies.
+
+---
+
+## Output Example
+
+```
+{
+    "title": "Joe's Coffee",
+    "category": "Coffee shop",
+    "address": "123 Main St, New York, NY 10001",
+    "phone": "+1 (212) 555-0100",
+    "website": "https://joescoffee.com",
+    "review_rating": 4.5,
+    "review_count": 843,
+    "status": "Open",
+    "description": "Cozy neighborhood cafe serving specialty espresso drinks.",
+    "price_range": "$$",
+    "open_hours": {
+        "monday": "7:00 AM – 8:00 PM",
+        "tuesday": "7:00 AM – 8:00 PM"
+    },
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "plus_code": "87G8+Q2 New York",
+    "images": ["https://..."],
+    "search_query": "coffee shops in New York",
+    "scraped_at": "2026-04-08T12:00:00Z"
+}
+```
