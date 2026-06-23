@@ -1,229 +1,351 @@
-[Google Maps Scraper](https://apify.com/scraperlink/google-maps-scraper?fpr=data)
+[Google Maps Scraper](https://apify.com/santamaria-automations/google-maps-scraper?fpr=data)
 
-# Google Maps Scraper
+# Google Maps Scraper -- Extract Business Data from Any Location on Earth
 
-**$0.50 per 1,000 results — all-in. No proxy fees. No compute surprises.**
+Scrape Google Maps search results worldwide. Get business names, addresses, phone numbers, websites, reviews, ratings, opening hours, GPS coordinates, and 30+ structured fields per place. Fast, reliable, and priced per result.
 
-Pull structured business data from Google Maps at a fraction of what other actors charge. Every run is fast, lightweight, and billed only for results you actually receive — each business lands as its own row in the dataset.
+## Why this scraper
 
-The leading Google Maps actor on Apify charges **$2.10 per 1,000 results**. We charge **$0.50**. That's 4× cheaper, with more data fields, faster runs, and zero hidden costs.
+- **All-inclusive pricing** -- 30+ fields per place at one flat rate. No extra charges for reviews, photos, hours, or address parsing.
+- **Extremely fast** -- Returns results in seconds, not minutes.
+- **Volume-friendly pricing** -- $1.00 per 1,000 places.
+- **Built-in enrichment** -- optionally trigger AI-powered contact extraction or job listing extraction on every website found.
+- **Your LLM, your choice** -- Gemini (recommended, free tier available), Groq, or OpenRouter with automatic fallback between providers.
+- **Works worldwide** -- any country, any language. Pass an ISO language code and get localized results.
 
----
+## Use with AI Agents (MCP)
 
-## What makes this different
+Connect this actor to any MCP-compatible AI client — Claude Desktop, Claude.ai, Cursor, VS Code, LangChain, LlamaIndex, or custom agents.
 
-|  | This actor | Top competitor |
+**Apify MCP server URL:**
+
+```
+https://mcp.apify.com?tools=santamaria-automations/google-maps-scraper
+```
+
+**Example prompt once connected:**
+
+> "Use `google-maps-scraper` to process data with google maps. Return results as a table."
+
+Clients that support dynamic tool discovery (Claude.ai, VS Code) will receive the full input schema automatically via `add-actor`.
+
+## Quick start
+
+### Simple search
+
+Pass plain search strings. Include the location in the string itself:
+
+```
+{
+  "searchStrings": [
+    "restaurants in Paris",
+    "coffee shops in Tokyo",
+    "dentists in New York"
+  ],
+  "maxResults": 20
+}
+```
+
+### Structured queries
+
+For programmatic use with company IDs, location filtering, and country codes:
+
+```
+{
+  "queries": [
+    {
+      "query": "software companies",
+      "location": "Berlin",
+      "country": "DE",
+      "company_id": "my-internal-id-123"
+    },
+    {
+      "query": "plumbers",
+      "location": "London",
+      "country": "GB"
+    }
+  ],
+  "maxResults": 50,
+  "language": "en"
+}
+```
+
+### With contact extraction
+
+Find businesses and automatically extract team contacts from their websites:
+
+```
+{
+  "searchStrings": ["IT companies in Munich"],
+  "maxResults": 20,
+  "enableContactExtraction": true,
+  "geminiApiKey": "your-gemini-api-key"
+}
+```
+
+### With job listing extraction
+
+Find businesses and automatically extract open positions from their career pages:
+
+```
+{
+  "searchStrings": ["software companies in Berlin"],
+  "maxResults": 20,
+  "enableJobExtraction": true,
+  "geminiApiKey": "your-gemini-api-key"
+}
+```
+
+## Input parameters
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `searchStrings` | string[] | `[]` | Simple search strings. Include location in the string for geo-targeting. |
+| `queries` | object[] | `[]` | Structured queries with optional `query`, `location`, `country`, `company_id`. |
+| `maxResults` | integer | `20` | Results per query. Max ~120 (Google Maps limit). |
+| `language` | string | `"en"` | ISO 639-1 language code (en, de, fr, ja, es, pt, it, ko, zh, ar, etc.). |
+| `enableContactExtraction` | boolean | `false` | After scraping, extract contacts from company websites via AI. |
+| `enableJobExtraction` | boolean | `false` | After scraping, extract job listings from career pages via AI. |
+| `enableBrowserFallback` | boolean | `false` | Re-scrape JS-rendered sites (React, Vue, Angular) with a full browser. Catches ~25% more sites. |
+| `outputLanguage` | string | `"en"` | Language for AI-extracted fields (en/de/fr/it/es/pt/nl/auto). |
+| `geminiApiKey` | string | -- | Gemini API key. Recommended for add-ons. Free tier: 1M tokens/min. |
+| `groqApiKey` | string | -- | Groq API key. Ultra-fast inference. Optional fallback. |
+| `openrouterApiKey` | string | -- | OpenRouter API key. Access 100+ models. Optional fallback. |
+| `excludeCids` | string[] | `[]` | Google CIDs to skip. Useful for excluding already-scraped places. |
+| `maxConcurrency` | integer | `10` | Parallel requests (1-20). |
+| `requestDelay` | integer | `300` | Delay between pagination requests in milliseconds (100-10,000). |
+| `proxyConfiguration` | object | Apify proxy | Proxy settings. Datacenter proxies work well. |
+
+Use either `searchStrings` or `queries` (or both). With `searchStrings`, each string is sent directly to Google Maps. With `queries`, you can separate the search term from the location and attach your own `company_id` for linking results back to your data.
+
+## Output
+
+Each result contains 30+ fields. Here is an example:
+
+```
+{
+  "company_id": "restaurants in Paris",
+  "title": "Le Petit Cler",
+  "category": "French restaurant",
+  "categories": ["French restaurant", "Restaurant"],
+  "address": "3 Rue Cler, 75007 Paris, France",
+  "complete_address": {
+    "street": "3 Rue Cler",
+    "city": "Paris",
+    "postal_code": "75007",
+    "state": "Ile-de-France",
+    "country": "France"
+  },
+  "latitude": 48.8571,
+  "longitude": 2.3007,
+  "plus_code": "8FW4V87C+X3",
+  "timezone": "Europe/Paris",
+  "phone": "+33 1 45 51 24 52",
+  "website": "https://www.lepetitcler.com/",
+  "emails": [],
+  "review_rating": 4.5,
+  "review_count": 1823,
+  "reviews_per_rating": { "1": 42, "2": 31, "3": 89, "4": 312, "5": 1349 },
+  "reviews_link": "https://search.google.com/local/reviews?placeid=...",
+  "user_reviews": [
+    {
+      "name": "Marie Dupont",
+      "rating": 5,
+      "text": "Excellent cuisine, warm atmosphere...",
+      "published_at": "2 months ago"
+    }
+  ],
+  "status": "OPERATIONAL",
+  "price_range": "$$",
+  "open_hours": {
+    "Monday": ["12:00-14:30", "19:00-22:30"],
+    "Tuesday": ["12:00-14:30", "19:00-22:30"],
+    "Wednesday": ["12:00-14:30", "19:00-22:30"],
+    "Thursday": ["12:00-14:30", "19:00-22:30"],
+    "Friday": ["12:00-14:30", "19:00-23:00"],
+    "Saturday": ["12:00-23:00"],
+    "Sunday": []
+  },
+  "thumbnail": "https://lh3.googleusercontent.com/places/...",
+  "images": [
+    { "title": "Interior", "image": "https://lh3.googleusercontent.com/..." }
+  ],
+  "owner": { "name": "Le Petit Cler", "link": "https://maps.google.com/..." },
+  "about": [
+    { "id": "dine_in", "name": "Dine-in" },
+    { "id": "reservations", "name": "Reservations" }
+  ],
+  "reservations": [
+    { "link": "https://www.thefork.com/...", "source": "TheFork" }
+  ],
+  "order_online": [],
+  "menu": { "link": "https://www.lepetitcler.com/menu", "source": "lepetitcler.com" },
+  "description": "Cozy French bistro in the heart of the 7th arrondissement.",
+  "link": "https://www.google.com/maps/place/Le+Petit+Cler/...",
+  "cid": "12345678901234567",
+  "data_id": "0x47e671a4e...",
+  "searchString": "restaurants in Paris",
+  "_rank": 1,
+  "scraped_at": "2026-03-05T10:30:00.000Z"
+}
+```
+
+### Complete field reference
+
+| Field | Type | Description |
 | --- | --- | --- |
-| Price per 1,000 results | **$0.50** | $2.10+ |
-| Proxy & infrastructure costs | **Included** | Billed separately |
-| Data fields per result | **40+** | ~20 |
-| Output organized into tabs | **6 tabs** | Basic table |
-| Browser required | **No** | Yes (Playwright) |
-| Bulk queries in one run | **Yes** | Yes |
-| Results as individual rows | **Yes** | Sometimes nested |
-| Max results per query | **200** | 120–200 |
+| `company_id` | string | Your reference ID (from `queries`) or the search string |
+| `title` | string | Business name |
+| `category` | string | Primary Google Maps category |
+| `categories` | string[] | All assigned categories |
+| `address` | string | Full formatted address |
+| `complete_address` | object | Parsed components: street, city, postal_code, state, country |
+| `latitude` | number | GPS latitude |
+| `longitude` | number | GPS longitude |
+| `plus_code` | string | Google Plus Code |
+| `timezone` | string | IANA timezone identifier |
+| `phone` | string | Phone number |
+| `website` | string | Website URL |
+| `emails` | string[] | Email addresses found on the listing |
+| `open_hours` | object | Opening hours grouped by day of week |
+| `popular_times` | object | Visitor traffic patterns by hour and day |
+| `price_range` | string | Price level ($ to $$$$) |
+| `status` | string | OPERATIONAL, CLOSED_TEMPORARILY, or CLOSED_PERMANENTLY |
+| `review_count` | integer | Total number of reviews |
+| `review_rating` | number | Average rating (1.0 to 5.0) |
+| `reviews_per_rating` | object | Breakdown of reviews by star rating (1 through 5) |
+| `reviews_link` | string | Direct URL to all reviews |
+| `user_reviews` | array | Sample reviews with name, rating, text, date, owner response |
+| `thumbnail` | string | Main business photo URL |
+| `images` | array | Additional photos with titles |
+| `reservations` | array | Reservation links with source (TheFork, OpenTable, etc.) |
+| `order_online` | array | Online ordering links with source |
+| `menu` | object | Menu link and source |
+| `owner` | object | Business owner name and profile link |
+| `about` | array | Amenities and features (dine-in, Wi-Fi, wheelchair access, etc.) |
+| `description` | string | Business description from Google |
+| `link` | string | Full Google Maps URL for this place |
+| `cid` | string | Google Maps CID -- stable identifier that persists across name/address changes |
+| `data_id` | string | Google internal data ID |
+| `searchString` | string | The search query that produced this result |
+| `_rank` | integer | Position in search results (1-based) |
+| `scraped_at` | string | ISO 8601 timestamp |
 
-**No browser means no Playwright, no Chromium, no headless overhead.** Runs complete in seconds, not minutes. You're not paying Apify compute for a browser to sit idle while a page loads.
+## Enrichment add-ons
 
-**Proxy costs are absorbed.** Every request is routed through our infrastructure. You never need to configure Apify proxies or eat proxy credits from your own plan.
+After the Maps scrape completes, this actor can automatically trigger AI-powered extraction on every website found in the results. Each add-on runs as a separate actor and produces its own dataset.
 
----
+### Contact extraction
 
-## Data you get (40+ fields across 6 tabs)
+Extracts team member names, email addresses, phone numbers, positions, and departments from company websites. Powered by the [Website Contact Extractor](https://apify.com/santamaria-automations/website-contact-extractor).
 
-### Overview
+Enable it by setting `enableContactExtraction: true` and providing at least one LLM API key. The sub-actor run ID is stored in the key-value store as `CONTACT_EXTRACTOR_RUN_ID`.
 
-Name, rating, review count, price level, category, full address, website, phone, and direct Google Maps URL — everything you need at a glance.
+### Job listing extraction
 
-### Contact Info
+Extracts open positions, job titles, locations, departments, and career page URLs from company websites. Powered by the [Website Job Extractor](https://apify.com/santamaria-automations/website-job-extractor).
 
-Full address broken into components (street, number, neighborhood, city, postal code, state, country), domain, all three phone formats (international, formatted, digits-only), coordinates (lat/lng), plus code, and the building or complex the business is located in.
+Enable it by setting `enableJobExtraction: true` and providing at least one LLM API key. The sub-actor run ID is stored in the key-value store as `JOB_EXTRACTOR_RUN_ID`.
 
-### Hours
+### Browser fallback
 
-Live open/closed status, weekly opening hours, service-specific hours (lunch, dinner, brunch, happy hour, and more), and booking/reservation links.
+Some company websites are built with JavaScript frameworks (React, Vue, Angular) that require a full browser to render. When `enableBrowserFallback` is set to `true`, the contact/job extractors will automatically re-scrape these sites with a real browser. This catches ~25% more sites but increases cost and runtime. Only applies when contact or job extraction is enabled.
 
-### Ratings & Reviews
+### LLM API keys
 
-Total score, star rating, rating count, review count, full review distribution (1–5 stars breakdown), and price tier.
+Both add-ons use LLMs to extract structured data. Provide one or more API keys. When multiple keys are provided, the system uses them in priority order with automatic fallback:
 
-### Media & Identity
+1. **Gemini** (recommended) -- Best quality-to-cost ratio. Free tier includes 1M tokens/min. Get a key at [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. **Groq** (optional) -- Ultra-fast inference. Get a key at [Groq Console](https://console.groq.com/keys).
+3. **OpenRouter** (optional) -- Access to 100+ models. Get a key at [OpenRouter](https://openrouter.ai/keys).
 
-Place ID, Data ID, CID, FID, Google Maps URL, search result URL, business image, thumbnail, logo, and owner information.
-
-### Metadata
-
-Original search query, rank and position in results, timezone, temporarily/permanently closed flags, about text, and popular times histogram data.
-
----
-
-## Input
-
-| Field | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `query` | string list | ✅ | — | One or more Google Maps search queries (e.g. `dentists in chicago`) |
-| `num` | integer |  | `20` | Results to return per query (max `200`) |
-| `gl` | string |  | `us` | Country for Google Maps results — match this to the country you're searching in (`ca`, `gb`, `de`, etc.) |
-| `hl` | string |  | `en` | Interface language for Google results (`fr`, `es`, `de`, etc.) |
-| `fields` | string |  | — | Comma-separated list of fields to keep — leave blank to get everything |
-
-### Example: multi-city lead generation
-
-```
-{
-  "query": [
-    "personal injury lawyers in houston",
-    "personal injury lawyers in dallas",
-    "personal injury lawyers in austin"
-  ],
-  "num": 200,
-  "gl": "us",
-  "hl": "en"
-}
-```
-
-### Example: international search
-
-```
-{
-  "query": ["coffee shops in london"],
-  "num": 100,
-  "gl": "gb",
-  "hl": "en"
-}
-```
-
----
-
-## Sample result
-
-```
-{
-  "query": "restaurants in toronto",
-  "searchString": "restaurants in toronto",
-  "rank": 1,
-  "position": 1,
-  "title": "Black+Blue Toronto",
-  "categoryName": "Restaurant",
-  "type": "Restaurant",
-  "categories": [
-    "Restaurant",
-    "Brunch restaurant",
-    "Event venue",
-    "Fine dining restaurant",
-    "Lounge bar",
-    "Seafood restaurant",
-    "Steak house",
-    "Sushi restaurant",
-    "Wine bar"
-  ],
-  "types": [
-    "Restaurant",
-    "Brunch restaurant",
-    "Event venue",
-    "Fine dining restaurant",
-    "Lounge bar",
-    "Seafood restaurant",
-    "Steak house",
-    "Sushi restaurant",
-    "Wine bar"
-  ],
-  "address": "130 King St W, Toronto, ON M5X 2A2, Canada",
-  "neighborhood": "Old Toronto",
-  "street": "130 King St W",
-  "streetNumber": null,
-  "city": "Toronto",
-  "postalCode": "M5X 2A2",
-  "state": "Ontario",
-  "countryCode": "CA",
-  "locatedIn": "Old Toronto",
-  "timezone": "America/Toronto",
-  "totalScore": 4.7,
-  "rating": 4.7,
-  "reviewsCount": 5589,
-  "ratingCount": 5589,
-  "reviewsDistribution": null,
-  "priceLevel": "CA$100 or above",
-  "phone": "+1 647-368-8283",
-  "phoneNumber": "(647) 368-8283",
-  "phoneUnformatted": "+16473688283",
-  "website": "https://blackandbluesteakhouse.ca/toronto-home/",
-  "domain": "blackandbluesteakhouse.ca",
-  "placeId": "ChIJ243-C381K4gRHMKWCGU86iM",
-  "dataId": "/g/11s9wnk_vb",
-  "cid": "2587947340511232540",
-  "cidHex": "0x882b357f0bfe8ddb:0x23ea3c650896c21c",
-  "fid": "0x882b357f0bfe8ddb:0x23ea3c650896c21c",
-  "googleMapsUrl": "https://www.google.com/maps/place/?q=place_id:ChIJ243-C381K4gRHMKWCGU86iM",
-  "url": "https://www.google.com/maps/search/?api=1&query=Black%2BBlue+Toronto&query_place_id=ChIJ243-C381K4gRHMKWCGU86iM",
-  "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkA...",
-  "thumbnailUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkA...",
-  "logoUrl": "https://lh3.googleusercontent.com/-ih84iASeZ7Y/AAAAAAA.../photo.jpg",
-  "owner": {
-    "name": "Black+Blue Toronto (Owner)",
-    "googleId": "102477914189084708456"
-  },
-  "location": {
-    "lat": 43.6480996,
-    "lng": -79.3831247
-  },
-  "latitude": 43.6480996,
-  "longitude": -79.3831247,
-  "plusCode": null,
-  "temporarilyClosed": null,
-  "permanentlyClosed": null,
-  "openingHours": {
-    "Friday": "11:30 AM–12 AM",
-    "Saturday": "10:30 AM–12 AM",
-    "Sunday": "10:30 AM–12 AM",
-    "Monday": "11:30 AM–12 AM",
-    "Tuesday": "11:30 AM–12 AM",
-    "Wednesday": "11:30 AM–12 AM",
-    "Thursday": "11:30 AM–12 AM"
-  },
-  "openingHoursDetailed": [
-    { "day": "Friday",    "hours": ["11:30 AM–12 AM"] },
-    { "day": "Saturday",  "hours": ["10:30 AM–12 AM"] },
-    { "day": "Sunday",    "hours": ["10:30 AM–12 AM"] },
-    { "day": "Monday",    "hours": ["11:30 AM–12 AM"] },
-    { "day": "Tuesday",   "hours": ["11:30 AM–12 AM"] },
-    { "day": "Wednesday", "hours": ["11:30 AM–12 AM"] },
-    { "day": "Thursday",  "hours": ["11:30 AM–12 AM"] }
-  ],
-  "openingHoursState": "Open · Closes 12 AM",
-  "serviceHours": {
-    "Lunch":       { "Friday": "11:30 AM–2 PM" },
-    "Happy hours": { "Friday": "2:30–5:30 PM" },
-    "Kitchen":     { "Friday": "11:30 AM–12 AM" },
-    "Dinner":      { "Friday": "3 PM–12 AM" },
-    "Brunch":      { "Friday": "Closed" }
-  },
-  "bookingLinks": [
-    "https://party-request.tripleseat.com/venues/8qsUeRbI/?rwg_token=...",
-    "https://www.google.com/maps/reserve/v/dine/c/DUtUFyMlWBE?source=pa",
-    "https://party-request.tripleseat.com/venues/8qsUeRbI/?rwg_token=..."
-  ],
-  "popularTimes": null,
-  "about": null
-}
-```
-
----
+One key is sufficient. With multiple keys, if the primary provider hits a rate limit, the system falls back to the next available provider automatically.
 
 ## Use cases
 
-- **Lead generation** — Build targeted prospect lists by business type and location
-- **Competitor research** — Monitor competitor ratings, hours, and pricing across cities
-- **Market analysis** — Map business density and coverage in any region
-- **Directory building** — Populate local business directories with verified contact data
-- **CRM enrichment** — Append phone, website, coordinates, and hours to existing records
+- **Lead generation** -- Search for businesses by type and location. Get phone numbers, websites, and emails in one run.
+- **Market research** -- Map competitors in a geographic area with ratings, review counts, and price ranges.
+- **Company enrichment** -- Add addresses, phone numbers, GPS coordinates, and opening hours to your existing database.
+- **Local SEO monitoring** -- Track your business listing and competitor rankings across locations.
+- **Real estate analysis** -- Find nearby amenities, restaurants, and services for property listings.
+- **Hiring intelligence** -- Discover companies in a region and extract their open positions in a single pipeline.
+- **Review analysis** -- Collect review ratings and sample reviews across competitors for sentiment analysis.
 
----
+## Excluding already-scraped places
 
-## Notes
+Use the `excludeCids` parameter to skip places you have already scraped. The CID (Customer ID) is a stable Google Maps identifier that does not change even if the business changes its name or address.
 
-- Multiple queries run in one actor invocation — no need to start separate runs per city or keyword.
-- Set `gl` to match the country you're targeting for the most accurate local results (`gl=ca` for Canada, `gl=gb` for UK, `gl=de` for Germany).
-- Use `fields` to trim output to only the columns you need — useful for large runs where you want a lean dataset.
-- Results are cached on our infrastructure for 1 hour, so repeated identical queries return immediately without re-fetching.
-- This actor makes no browser calls. It connects directly to our scraping infrastructure, meaning cold starts are near-instant and memory usage stays flat throughout the run.
+```
+{
+  "searchStrings": ["cafes in Zurich"],
+  "maxResults": 100,
+  "excludeCids": ["12345678901234567", "98765432109876543"]
+}
+```
+
+This is useful for incremental scraping workflows where you want to collect only new results.
+
+## Supported languages
+
+Pass any ISO 639-1 language code: `en`, `de`, `fr`, `ja`, `es`, `pt`, `it`, `ko`, `zh-CN`, `ar`, `nl`, `pl`, `sv`, `da`, `fi`, `no`, `cs`, `hu`, `ro`, `el`, `tr`, `th`, `vi`, `id`, and more.
+
+## Tips for better results
+
+- **Include the location in your search** -- "plumber Berlin" works better than just "plumber"
+- **Use the local language** for better results in non-English countries (e.g., "Zahnarzt Zurich" instead of "dentist Zurich")
+- **Set language to match your target market** -- `de` for German results, `fr` for French
+- **Use Exclude CIDs** to avoid re-scraping places you already have from previous runs
+
+## Pricing
+
+**$1.00 per 1,000 places** scraped. All 30+ fields are included per place. No extra charges for reviews, photos, opening hours, parsed addresses, or any other field.
+
+Example costs:
+
+- 100 places = $0.10
+- 1,000 places = $1.00
+- 10,000 places = $10.00
+
+| Add-on | Pricing |
+| --- | --- |
+| Contact extraction | Billed separately by the [Website Contact Extractor](https://apify.com/santamaria-automations/website-contact-extractor) |
+| Job listing extraction | Billed separately by the [Website Job Extractor](https://apify.com/santamaria-automations/website-job-extractor) |
+
+## Limitations
+
+- **~120 results per query** -- Google Maps returns a maximum of approximately 120 places per search query. For broader coverage, split your search into multiple queries by neighborhood or sub-region.
+- **No individual place detail pages** -- Data comes from search results, not from visiting each place page individually. Most fields are populated, but some niche fields (full review text, all photos) may be limited to what Google includes in search results.
+- **Search relevance** -- Results depend on Google's ranking algorithm. The same query may return slightly different results over time.
+- **Rate limiting** -- Very high concurrency or very low request delays may trigger temporary blocks from Google. The defaults (10 concurrency, 300ms delay) are tuned for reliability.
+
+## Related Actors
+
+**Find businesses to enrich**
+
+- [Kleinanzeigen.de Scraper — Germany](https://apify.com/santamaria-automations/kleinanzeigen-de-scraper)
+- [Willhaben.at Scraper — Austria](https://apify.com/santamaria-automations/willhaben-at-scraper)
+- [Tutti.ch Scraper — Switzerland](https://apify.com/santamaria-automations/tutti-ch-scraper)
+- [Subito.it Scraper — Italy](https://apify.com/santamaria-automations/subito-it-scraper)
+- [Marktplaats.nl Scraper — Netherlands](https://apify.com/santamaria-automations/marktplaats-nl-scraper)
+
+**Real Estate**
+
+- [Homegate.ch Scraper — Swiss real estate](https://apify.com/santamaria-automations/homegate-scraper)
+- [Immowelt.de Scraper — German real estate](https://apify.com/santamaria-automations/immowelt-de-scraper)
+- [Oikotie.fi Scraper — Finnish real estate](https://apify.com/santamaria-automations/oikotie-fi-scraper)
+
+**E-Commerce**
+
+- [AutoScout24 Scraper — European car listings](https://apify.com/santamaria-automations/autoscout24-scraper)
+- [Booking.com Scraper — Hotel listings](https://apify.com/santamaria-automations/booking-com-scraper)
+
+**Enrichment**
+
+- [Website Email & Phone Scraper](https://apify.com/santamaria-automations/website-email-scraper)
+- [Website Contact Extractor](https://apify.com/santamaria-automations/website-contact-extractor)
+- [Website Job Extractor](https://apify.com/santamaria-automations/website-job-extractor)
+- [LinkedIn Scraper](https://apify.com/santamaria-automations/linkedin-scraper)
+
+## Support
+
+Found a bug or have a feature request? [Open an issue](https://console.apify.com/actors/S3TUPOWUK8RoocPjh/issues).
