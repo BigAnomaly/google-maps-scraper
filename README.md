@@ -1,351 +1,290 @@
-[Google Maps Scraper](https://apify.com/santamaria-automations/google-maps-scraper?fpr=data)
+[Google Maps Scraper](https://apify.com/buseta/google-maps-scraper?fpr=data)
 
-# Google Maps Scraper -- Extract Business Data from Any Location on Earth
+# Google Maps Scraper + AI Business Intelligence
 
-Scrape Google Maps search results worldwide. Get business names, addresses, phone numbers, websites, reviews, ratings, opening hours, GPS coordinates, and 30+ structured fields per place. Fast, reliable, and priced per result.
+Fast, low-cost Google Maps scraper with AI-powered lead scoring and personalized outreach generation. Extract businesses, reviews, emails, and social links from Google Maps — no browser needed, pure HTTP for maximum speed and minimum cost.
 
-## Why this scraper
+## Features
 
-- **All-inclusive pricing** -- 30+ fields per place at one flat rate. No extra charges for reviews, photos, hours, or address parsing.
-- **Extremely fast** -- Returns results in seconds, not minutes.
-- **Volume-friendly pricing** -- $1.00 per 1,000 places.
-- **Built-in enrichment** -- optionally trigger AI-powered contact extraction or job listing extraction on every website found.
-- **Your LLM, your choice** -- Gemini (recommended, free tier available), Groq, or OpenRouter with automatic fallback between providers.
-- **Works worldwide** -- any country, any language. Pass an ISO language code and get localized results.
-
-## Use with AI Agents (MCP)
-
-Connect this actor to any MCP-compatible AI client — Claude Desktop, Claude.ai, Cursor, VS Code, LangChain, LlamaIndex, or custom agents.
-
-**Apify MCP server URL:**
-
-```
-https://mcp.apify.com?tools=santamaria-automations/google-maps-scraper
-```
-
-**Example prompt once connected:**
-
-> "Use `google-maps-scraper` to process data with google maps. Return results as a table."
-
-Clients that support dynamic tool discovery (Claude.ai, VS Code) will receive the full input schema automatically via `add-actor`.
-
-## Quick start
-
-### Simple search
-
-Pass plain search strings. Include the location in the string itself:
-
-```
-{
-  "searchStrings": [
-    "restaurants in Paris",
-    "coffee shops in Tokyo",
-    "dentists in New York"
-  ],
-  "maxResults": 20
-}
-```
-
-### Structured queries
-
-For programmatic use with company IDs, location filtering, and country codes:
-
-```
-{
-  "queries": [
-    {
-      "query": "software companies",
-      "location": "Berlin",
-      "country": "DE",
-      "company_id": "my-internal-id-123"
-    },
-    {
-      "query": "plumbers",
-      "location": "London",
-      "country": "GB"
-    }
-  ],
-  "maxResults": 50,
-  "language": "en"
-}
-```
-
-### With contact extraction
-
-Find businesses and automatically extract team contacts from their websites:
-
-```
-{
-  "searchStrings": ["IT companies in Munich"],
-  "maxResults": 20,
-  "enableContactExtraction": true,
-  "geminiApiKey": "your-gemini-api-key"
-}
-```
-
-### With job listing extraction
-
-Find businesses and automatically extract open positions from their career pages:
-
-```
-{
-  "searchStrings": ["software companies in Berlin"],
-  "maxResults": 20,
-  "enableJobExtraction": true,
-  "geminiApiKey": "your-gemini-api-key"
-}
-```
-
-## Input parameters
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `searchStrings` | string[] | `[]` | Simple search strings. Include location in the string for geo-targeting. |
-| `queries` | object[] | `[]` | Structured queries with optional `query`, `location`, `country`, `company_id`. |
-| `maxResults` | integer | `20` | Results per query. Max ~120 (Google Maps limit). |
-| `language` | string | `"en"` | ISO 639-1 language code (en, de, fr, ja, es, pt, it, ko, zh, ar, etc.). |
-| `enableContactExtraction` | boolean | `false` | After scraping, extract contacts from company websites via AI. |
-| `enableJobExtraction` | boolean | `false` | After scraping, extract job listings from career pages via AI. |
-| `enableBrowserFallback` | boolean | `false` | Re-scrape JS-rendered sites (React, Vue, Angular) with a full browser. Catches ~25% more sites. |
-| `outputLanguage` | string | `"en"` | Language for AI-extracted fields (en/de/fr/it/es/pt/nl/auto). |
-| `geminiApiKey` | string | -- | Gemini API key. Recommended for add-ons. Free tier: 1M tokens/min. |
-| `groqApiKey` | string | -- | Groq API key. Ultra-fast inference. Optional fallback. |
-| `openrouterApiKey` | string | -- | OpenRouter API key. Access 100+ models. Optional fallback. |
-| `excludeCids` | string[] | `[]` | Google CIDs to skip. Useful for excluding already-scraped places. |
-| `maxConcurrency` | integer | `10` | Parallel requests (1-20). |
-| `requestDelay` | integer | `300` | Delay between pagination requests in milliseconds (100-10,000). |
-| `proxyConfiguration` | object | Apify proxy | Proxy settings. Datacenter proxies work well. |
-
-Use either `searchStrings` or `queries` (or both). With `searchStrings`, each string is sent directly to Google Maps. With `queries`, you can separate the search term from the location and attach your own `company_id` for linking results back to your data.
-
-## Output
-
-Each result contains 30+ fields. Here is an example:
-
-```
-{
-  "company_id": "restaurants in Paris",
-  "title": "Le Petit Cler",
-  "category": "French restaurant",
-  "categories": ["French restaurant", "Restaurant"],
-  "address": "3 Rue Cler, 75007 Paris, France",
-  "complete_address": {
-    "street": "3 Rue Cler",
-    "city": "Paris",
-    "postal_code": "75007",
-    "state": "Ile-de-France",
-    "country": "France"
-  },
-  "latitude": 48.8571,
-  "longitude": 2.3007,
-  "plus_code": "8FW4V87C+X3",
-  "timezone": "Europe/Paris",
-  "phone": "+33 1 45 51 24 52",
-  "website": "https://www.lepetitcler.com/",
-  "emails": [],
-  "review_rating": 4.5,
-  "review_count": 1823,
-  "reviews_per_rating": { "1": 42, "2": 31, "3": 89, "4": 312, "5": 1349 },
-  "reviews_link": "https://search.google.com/local/reviews?placeid=...",
-  "user_reviews": [
-    {
-      "name": "Marie Dupont",
-      "rating": 5,
-      "text": "Excellent cuisine, warm atmosphere...",
-      "published_at": "2 months ago"
-    }
-  ],
-  "status": "OPERATIONAL",
-  "price_range": "$$",
-  "open_hours": {
-    "Monday": ["12:00-14:30", "19:00-22:30"],
-    "Tuesday": ["12:00-14:30", "19:00-22:30"],
-    "Wednesday": ["12:00-14:30", "19:00-22:30"],
-    "Thursday": ["12:00-14:30", "19:00-22:30"],
-    "Friday": ["12:00-14:30", "19:00-23:00"],
-    "Saturday": ["12:00-23:00"],
-    "Sunday": []
-  },
-  "thumbnail": "https://lh3.googleusercontent.com/places/...",
-  "images": [
-    { "title": "Interior", "image": "https://lh3.googleusercontent.com/..." }
-  ],
-  "owner": { "name": "Le Petit Cler", "link": "https://maps.google.com/..." },
-  "about": [
-    { "id": "dine_in", "name": "Dine-in" },
-    { "id": "reservations", "name": "Reservations" }
-  ],
-  "reservations": [
-    { "link": "https://www.thefork.com/...", "source": "TheFork" }
-  ],
-  "order_online": [],
-  "menu": { "link": "https://www.lepetitcler.com/menu", "source": "lepetitcler.com" },
-  "description": "Cozy French bistro in the heart of the 7th arrondissement.",
-  "link": "https://www.google.com/maps/place/Le+Petit+Cler/...",
-  "cid": "12345678901234567",
-  "data_id": "0x47e671a4e...",
-  "searchString": "restaurants in Paris",
-  "_rank": 1,
-  "scraped_at": "2026-03-05T10:30:00.000Z"
-}
-```
-
-### Complete field reference
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `company_id` | string | Your reference ID (from `queries`) or the search string |
-| `title` | string | Business name |
-| `category` | string | Primary Google Maps category |
-| `categories` | string[] | All assigned categories |
-| `address` | string | Full formatted address |
-| `complete_address` | object | Parsed components: street, city, postal_code, state, country |
-| `latitude` | number | GPS latitude |
-| `longitude` | number | GPS longitude |
-| `plus_code` | string | Google Plus Code |
-| `timezone` | string | IANA timezone identifier |
-| `phone` | string | Phone number |
-| `website` | string | Website URL |
-| `emails` | string[] | Email addresses found on the listing |
-| `open_hours` | object | Opening hours grouped by day of week |
-| `popular_times` | object | Visitor traffic patterns by hour and day |
-| `price_range` | string | Price level ($ to $$$$) |
-| `status` | string | OPERATIONAL, CLOSED_TEMPORARILY, or CLOSED_PERMANENTLY |
-| `review_count` | integer | Total number of reviews |
-| `review_rating` | number | Average rating (1.0 to 5.0) |
-| `reviews_per_rating` | object | Breakdown of reviews by star rating (1 through 5) |
-| `reviews_link` | string | Direct URL to all reviews |
-| `user_reviews` | array | Sample reviews with name, rating, text, date, owner response |
-| `thumbnail` | string | Main business photo URL |
-| `images` | array | Additional photos with titles |
-| `reservations` | array | Reservation links with source (TheFork, OpenTable, etc.) |
-| `order_online` | array | Online ordering links with source |
-| `menu` | object | Menu link and source |
-| `owner` | object | Business owner name and profile link |
-| `about` | array | Amenities and features (dine-in, Wi-Fi, wheelchair access, etc.) |
-| `description` | string | Business description from Google |
-| `link` | string | Full Google Maps URL for this place |
-| `cid` | string | Google Maps CID -- stable identifier that persists across name/address changes |
-| `data_id` | string | Google internal data ID |
-| `searchString` | string | The search query that produced this result |
-| `_rank` | integer | Position in search results (1-based) |
-| `scraped_at` | string | ISO 8601 timestamp |
-
-## Enrichment add-ons
-
-After the Maps scrape completes, this actor can automatically trigger AI-powered extraction on every website found in the results. Each add-on runs as a separate actor and produces its own dataset.
-
-### Contact extraction
-
-Extracts team member names, email addresses, phone numbers, positions, and departments from company websites. Powered by the [Website Contact Extractor](https://apify.com/santamaria-automations/website-contact-extractor).
-
-Enable it by setting `enableContactExtraction: true` and providing at least one LLM API key. The sub-actor run ID is stored in the key-value store as `CONTACT_EXTRACTOR_RUN_ID`.
-
-### Job listing extraction
-
-Extracts open positions, job titles, locations, departments, and career page URLs from company websites. Powered by the [Website Job Extractor](https://apify.com/santamaria-automations/website-job-extractor).
-
-Enable it by setting `enableJobExtraction: true` and providing at least one LLM API key. The sub-actor run ID is stored in the key-value store as `JOB_EXTRACTOR_RUN_ID`.
-
-### Browser fallback
-
-Some company websites are built with JavaScript frameworks (React, Vue, Angular) that require a full browser to render. When `enableBrowserFallback` is set to `true`, the contact/job extractors will automatically re-scrape these sites with a real browser. This catches ~25% more sites but increases cost and runtime. Only applies when contact or job extraction is enabled.
-
-### LLM API keys
-
-Both add-ons use LLMs to extract structured data. Provide one or more API keys. When multiple keys are provided, the system uses them in priority order with automatic fallback:
-
-1. **Gemini** (recommended) -- Best quality-to-cost ratio. Free tier includes 1M tokens/min. Get a key at [Google AI Studio](https://aistudio.google.com/app/apikey).
-2. **Groq** (optional) -- Ultra-fast inference. Get a key at [Groq Console](https://console.groq.com/keys).
-3. **OpenRouter** (optional) -- Access to 100+ models. Get a key at [OpenRouter](https://openrouter.ai/keys).
-
-One key is sufficient. With multiple keys, if the primary provider hits a rate limit, the system falls back to the next available provider automatically.
-
-## Use cases
-
-- **Lead generation** -- Search for businesses by type and location. Get phone numbers, websites, and emails in one run.
-- **Market research** -- Map competitors in a geographic area with ratings, review counts, and price ranges.
-- **Company enrichment** -- Add addresses, phone numbers, GPS coordinates, and opening hours to your existing database.
-- **Local SEO monitoring** -- Track your business listing and competitor rankings across locations.
-- **Real estate analysis** -- Find nearby amenities, restaurants, and services for property listings.
-- **Hiring intelligence** -- Discover companies in a region and extract their open positions in a single pipeline.
-- **Review analysis** -- Collect review ratings and sample reviews across competitors for sentiment analysis.
-
-## Excluding already-scraped places
-
-Use the `excludeCids` parameter to skip places you have already scraped. The CID (Customer ID) is a stable Google Maps identifier that does not change even if the business changes its name or address.
-
-```
-{
-  "searchStrings": ["cafes in Zurich"],
-  "maxResults": 100,
-  "excludeCids": ["12345678901234567", "98765432109876543"]
-}
-```
-
-This is useful for incremental scraping workflows where you want to collect only new results.
-
-## Supported languages
-
-Pass any ISO 639-1 language code: `en`, `de`, `fr`, `ja`, `es`, `pt`, `it`, `ko`, `zh-CN`, `ar`, `nl`, `pl`, `sv`, `da`, `fi`, `no`, `cs`, `hu`, `ro`, `el`, `tr`, `th`, `vi`, `id`, and more.
-
-## Tips for better results
-
-- **Include the location in your search** -- "plumber Berlin" works better than just "plumber"
-- **Use the local language** for better results in non-English countries (e.g., "Zahnarzt Zurich" instead of "dentist Zurich")
-- **Set language to match your target market** -- `de` for German results, `fr` for French
-- **Use Exclude CIDs** to avoid re-scraping places you already have from previous runs
+- **Search with auto-grid** — Bypass Google's 20-result limit. Automatically subdivides large areas into grid cells to find hundreds or thousands of businesses
+- **Multi-query batch** — Paste a list of searches (e.g., 50 cities x 1 category) and scrape them all in one run
+- **Email & social extraction** — Crawl business websites to find email addresses and social media links (free, no extra charge)
+- **Reviews** — Scrape reviews with text, rating, date, reviewer info, and owner responses
+- **Filters** — Filter by rating range or find only businesses without a website
+- **AI Lead Scoring** — AI analyzes each business and generates a lead score (0-100) with a ready-to-send cold email
+- **AI Market Report** — One-click market intelligence report for your entire dataset
+- **CSV-friendly output** — Flat fields ready for Excel, Google Sheets, or CRM import
 
 ## Pricing
 
-**$1.00 per 1,000 places** scraped. All 30+ fields are included per place. No extra charges for reviews, photos, opening hours, parsed addresses, or any other field.
-
-Example costs:
-
-- 100 places = $0.10
-- 1,000 places = $1.00
-- 10,000 places = $10.00
-
-| Add-on | Pricing |
+| Event | Price |
 | --- | --- |
-| Contact extraction | Billed separately by the [Website Contact Extractor](https://apify.com/santamaria-automations/website-contact-extractor) |
-| Job listing extraction | Billed separately by the [Website Job Extractor](https://apify.com/santamaria-automations/website-job-extractor) |
+| Place scraped | $4.00 / 1,000 |
+| Review scraped | $0.50 / 1,000 |
+| AI Lead Score + Outreach draft | $35.00 / 1,000 |
+| AI Market Report | $0.10 / run |
+| Email & social extraction | Free |
+| Platform usage | Free |
 
-## Limitations
+### Typical Run Costs
 
-- **~120 results per query** -- Google Maps returns a maximum of approximately 120 places per search query. For broader coverage, split your search into multiple queries by neighborhood or sub-region.
-- **No individual place detail pages** -- Data comes from search results, not from visiting each place page individually. Most fields are populated, but some niche fields (full review text, all photos) may be limited to what Google includes in search results.
-- **Search relevance** -- Results depend on Google's ranking algorithm. The same query may return slightly different results over time.
-- **Rate limiting** -- Very high concurrency or very low request delays may trigger temporary blocks from Google. The defaults (10 concurrency, 300ms delay) are tuned for reliability.
+| Use Case | Places | Reviews | Emails | AI | Total Cost |
+| --- | --- | --- | --- | --- | --- |
+| Quick lead search (20 places + emails) | $0.08 | — | Free | — | **$0.08** |
+| City-wide lead gen (200 places + emails) | $0.80 | — | Free | — | **$0.80** |
+| Full pipeline (200 places + emails + AI outreach) | $0.80 | — | Free | $7.00 | **$7.80** |
+| Competitor research (100 places + 10 reviews each) | $0.40 | $0.50 | — | — | **$0.90** |
+| Market report (500 places + AI report) | $2.00 | — | — | $0.10 | **$2.10** |
 
-## Related Actors
+## Use Case Examples
 
-**Find businesses to enrich**
+### 1. Lead Generation — Find businesses without websites
 
-- [Kleinanzeigen.de Scraper — Germany](https://apify.com/santamaria-automations/kleinanzeigen-de-scraper)
-- [Willhaben.at Scraper — Austria](https://apify.com/santamaria-automations/willhaben-at-scraper)
-- [Tutti.ch Scraper — Switzerland](https://apify.com/santamaria-automations/tutti-ch-scraper)
-- [Subito.it Scraper — Italy](https://apify.com/santamaria-automations/subito-it-scraper)
-- [Marktplaats.nl Scraper — Netherlands](https://apify.com/santamaria-automations/marktplaats-nl-scraper)
+You're a web design agency looking for prospects in Miami.
 
-**Real Estate**
+**Input:**
 
-- [Homegate.ch Scraper — Swiss real estate](https://apify.com/santamaria-automations/homegate-scraper)
-- [Immowelt.de Scraper — German real estate](https://apify.com/santamaria-automations/immowelt-de-scraper)
-- [Oikotie.fi Scraper — Finnish real estate](https://apify.com/santamaria-automations/oikotie-fi-scraper)
+```
+{
+    "mode": "search",
+    "search_queries": ["restaurants in Miami", "salons in Miami", "gyms in Miami"],
+    "max_places": 200,
+    "only_without_website": true,
+    "get_emails": false,
+    "ai_lead_scoring": true,
+    "ai_goal": "web_design",
+    "ai_sender_name": "Sarah"
+}
+```
 
-**E-Commerce**
+**What you get:** 200 businesses in Miami that don't have a website, each with a lead score and a personalized email like:
 
-- [AutoScout24 Scraper — European car listings](https://apify.com/santamaria-automations/autoscout24-scraper)
-- [Booking.com Scraper — Hotel listings](https://apify.com/santamaria-automations/booking-com-scraper)
+```
+Subject: Helping Miami Salons Get Found Online
 
-**Enrichment**
+Hi Bella's Beauty Lounge,
 
-- [Website Email & Phone Scraper](https://apify.com/santamaria-automations/website-email-scraper)
-- [Website Contact Extractor](https://apify.com/santamaria-automations/website-contact-extractor)
-- [Website Job Extractor](https://apify.com/santamaria-automations/website-job-extractor)
-- [LinkedIn Scraper](https://apify.com/santamaria-automations/linkedin-scraper)
+I noticed you have a great Google rating (4.8★) but no website yet — which means potential customers searching "salons near me"
+might be finding your competitors first. A simple, mobile-friendly website could help you capture those local searches
+and let customers book online.
 
-## Support
+Would you be open to a quick 10-minute chat about getting one set up?
 
-Found a bug or have a feature request? [Open an issue](https://console.apify.com/actors/S3TUPOWUK8RoocPjh/issues).
+Best,
+Sarah
+```
+
+### 2. SEO Agency — Find businesses with weak online presence
+
+**Input:**
+
+```
+{
+    "mode": "search",
+    "search_queries": ["plumbers in Dallas"],
+    "max_places": 100,
+    "get_reviews": true,
+    "max_reviews_per_place": 5,
+    "get_emails": true,
+    "ai_lead_scoring": true,
+    "ai_goal": "seo_marketing",
+    "ai_sender_name": "Mike"
+}
+```
+
+**What you get:** 100 plumbers in Dallas with their emails, reviews, and AI-generated outreach emails focused on SEO opportunities.
+
+### 3. Reputation Management — Find businesses with bad reviews
+
+**Input:**
+
+```
+{
+    "mode": "search",
+    "search_queries": ["dentists in Chicago"],
+    "max_places": 200,
+    "max_rating": 3.5,
+    "get_reviews": true,
+    "max_reviews_per_place": 10,
+    "reviews_sort": "lowest",
+    "ai_lead_scoring": true,
+    "ai_goal": "reputation_management"
+}
+```
+
+**What you get:** Dentists in Chicago with 3.5 stars or lower, their worst reviews, and personalized outreach pitching reputation management services.
+
+### 4. Market Research — Analyze an entire market
+
+**Input:**
+
+```
+{
+    "mode": "search",
+    "search_queries": ["coffee shops in San Francisco"],
+    "max_places": 500,
+    "ai_market_report": true
+}
+```
+
+**What you get:** 500 coffee shops with full data, plus an AI market report:
+
+```
+{
+    "type": "ai_market_report",
+    "market_summary": "The coffee shop market in San Francisco is highly saturated with 500+ providers...",
+    "saturation_level": "high",
+    "key_findings": [
+        "Average rating is 4.4★ — quality bar is high",
+        "23% of shops have no website",
+        "The Mission district has 3x more shops than Sunset despite similar population"
+    ],
+    "opportunities": [
+        {
+            "opportunity": "115 coffee shops have no website",
+            "target_count": 115,
+            "action": "Web design outreach targeting established shops (4+ stars) without web presence"
+        }
+    ],
+    "recommendations": [
+        "Focus on the Sunset and Richmond districts — underserved relative to population",
+        "Target businesses with 50+ reviews but no website — established but digitally behind"
+    ]
+}
+```
+
+### 5. Custom B2B Sales — Sell anything to local businesses
+
+You run a commercial cleaning company and want to pitch office cleaning to businesses.
+
+**Input:**
+
+```
+{
+    "mode": "search",
+    "search_queries": ["law firms in Boston", "accounting firms in Boston", "dental offices in Boston"],
+    "max_places": 100,
+    "get_emails": true,
+    "ai_lead_scoring": true,
+    "ai_goal": "custom",
+    "ai_custom_pitch": "I run CleanPro Commercial Cleaning. We provide daily office cleaning, deep cleaning, and sanitization services for professional offices. Our pricing starts at $500/month.",
+    "ai_sender_name": "James from CleanPro"
+}
+```
+
+### 6. Simple Scrape — Just get the data, no AI
+
+**Input:**
+
+```
+{
+    "mode": "search",
+    "search_queries": ["hotels in London"],
+    "max_places": 50,
+    "get_emails": true
+}
+```
+
+**What you get:** 50 hotels with name, address, phone, website, rating, categories, coordinates, hours, emails, and social links.
+
+### 7. Scrape Specific Places by URL
+
+**Input:**
+
+```
+{
+    "mode": "place_urls",
+    "place_urls": [
+        "https://www.google.com/maps/place/Gramercy+Tavern/@40.7384555,-73.9885064,17z/data=!3m1!4b1!4m6!3m5!1s0x89c259a1820824bd:0x2b79dcdc251b8415",
+        "https://www.google.com/maps/place/Le+Bernardin/@40.7615199,-73.9816553,17z"
+    ],
+    "get_reviews": true,
+    "max_reviews_per_place": 20,
+    "get_emails": true
+}
+```
+
+### 8. Area Coverage with Bounding Box
+
+Scrape all gyms within a specific geographic area:
+
+**Input:**
+
+```
+{
+    "mode": "search",
+    "search_queries": ["gym"],
+    "bounding_box": {
+        "sw_lat": 40.70,
+        "sw_lng": -74.02,
+        "ne_lat": 40.80,
+        "ne_lng": -73.93
+    },
+    "max_places": 500
+}
+```
+
+## Output Fields
+
+Each place in the dataset includes:
+
+| Field | Description |
+| --- | --- |
+| `name` | Business name |
+| `address` | Full address |
+| `phone` | Phone number |
+| `website` | Website URL |
+| `email` | Primary email (if email extraction enabled) |
+| `emails_all` | All emails found, comma-separated |
+| `category` | Primary business category |
+| `categories_all` | All categories, comma-separated |
+| `rating` | Google rating (1.0 - 5.0) |
+| `place_id` | Google Place ID |
+| `google_maps_url` | Direct Google Maps link |
+| `latitude` | Latitude coordinate |
+| `longitude` | Longitude coordinate |
+| `description` | Business description from Google |
+| `price_level` | Price level ($, $$, $$$) |
+| `hours_monday` ... `hours_sunday` | Opening hours per day |
+| `social_facebook` | Facebook page URL |
+| `social_instagram` | Instagram profile URL |
+| `social_twitter` | Twitter/X profile URL |
+| `social_linkedin` | LinkedIn page URL |
+| `social_youtube` | YouTube channel URL |
+| `reviews` | Array of review objects (if enabled) |
+| `ai_lead_score` | Lead score 0-100 (if AI enabled) |
+| `ai_lead_reason` | Why this score was given |
+| `ai_outreach_subject` | Email subject line |
+| `ai_outreach_email` | Personalized email draft |
+
+## AI Goal Guide
+
+When enabling AI Lead Scoring, choose the goal that matches your business:
+
+| Goal | Best For | What AI Focuses On |
+| --- | --- | --- |
+| **Web Design** | Web agencies, freelance developers | Targets businesses with no website. Pitches modern web presence, online booking, competitor comparison |
+| **SEO & Marketing** | SEO agencies, Google Ads specialists | Targets businesses with low visibility, few reviews, or weak online presence vs. competitors |
+| **Reputation Management** | Reputation agencies, review management tools | Targets businesses with low ratings. References specific negative review themes, offers solutions |
+| **General B2B Sales** | Any product/service sold to local businesses | Professional intro pitch. Describe your offering in the "Custom pitch" field |
+| **Custom** | Anything else | Write your own pitch context. AI personalizes it for each business using their profile data |
+
+## How Auto-Grid Works
+
+When you search for "dentists in Chicago" with `max_places: 500`, the scraper:
+
+1. Geocodes "Chicago" to a bounding box
+2. Divides the area into grid cells (~2km each)
+3. Searches each cell separately (20 results per cell)
+4. Deduplicates results by Place ID
+5. Stops when `max_places` is reached
+
+This bypasses Google's 20-result-per-query limit, giving you comprehensive area coverage.
+
+## Tips
+
+- **Start small** — Test with `max_places: 20` first to verify data quality
+- **Email extraction is free** — Always enable it for lead gen use cases
+- **Use multi-query** — Instead of one broad search, use specific queries: `["pizza in Brooklyn", "pizza in Queens", "pizza in Manhattan"]`
+- **Filter smartly** — Use `only_without_website: true` for web design leads, or `max_rating: 3.5` for reputation management leads
+- **AI works best with reviews** — Enable `get_reviews` alongside AI lead scoring for more accurate scores and better outreach personalization
